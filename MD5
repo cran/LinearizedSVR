@@ -1,0 +1,8 @@
+622602424b883a36627e4d5403fdc7da *DESCRIPTION
+8befc3fc1fb900d204dd887c88e44428 *NAMESPACE
+bdb6adcf68b7e22f711dd1eb056c2cd1 *R/linearizedSVR.R
+6208d945a29caba2595a1ee8872c1779 *inst/tests/test-main.R
+be4bea6cf092647af9714034dc66e93a *man/LinearizedSVR-package.Rd
+26688878110f66a4afc49a3f0f9faa36 *man/LinearizedSVRTrain.Rd
+d5d86da672d7412639ec5a03d0db0a09 *man/predict.LinearizedSVR.Rd
+e2571c8026fdb4976edfc168b1811205 *tests/main.R
