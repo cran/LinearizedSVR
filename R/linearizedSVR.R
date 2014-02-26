@@ -54,10 +54,7 @@
 ##' @docType package
 ##' @title Linearized Support Vector Regression
 ##' @seealso LinearizedSVRTrain
-
-library(kernlab)
-library(LiblineaR)
-library(expectreg)
+NULL
 
 
 
@@ -86,6 +83,11 @@ library(expectreg)
 ##' @param expectile if non-null, do expectile regression using the
 ##' given expectile value.  Currently uses the \code{expectreg}
 ##' package.
+##' @param scale a boolean value indicating whether \code{X} and \code{Y} should
+##'   be normalized (to zero-mean and unit-variance) before learning.
+##' @param sigest if the kernel expects a \code{sigma} parameter and none is
+##'   provided in \code{kpar}, this parameter specifies a function to use to
+##'   compute it.
 ##' @return a model object that can later be used as the first
 ##' argument for the \code{predict()} method.
 ##' @export
@@ -96,46 +98,54 @@ library(expectreg)
 ##' mod <- LinearizedSVRTrain(X=as.matrix(dat[-1]), Y=dat$y, nump=6)
 ##' res <- predict(mod, newdata=as.matrix(dat[-1]))
 ##' plot(x2 ~ x1, dat, col=c("red","green")[1+(res>1.5)], pch=c(3,20)[dat$y])
+##'
+##' @importFrom kernlab rbfdot kernelMatrix
+##' @importFrom LiblineaR LiblineaR
+##' @importFrom expectreg expectreg.ls
 
 LinearizedSVRTrain <- function(X, Y,
                 C = 1, epsilon = 0.01, nump = floor(sqrt(N)),
                 ktype=rbfdot, kpar, prototypes=c("kmeans","random"), clusterY=FALSE,
-                epsilon.up=epsilon, epsilon.down=epsilon, expectile = NULL){
+                epsilon.up=epsilon, epsilon.down=epsilon, expectile = NULL, scale=TRUE,
+                sigest=sigma.est){
 
   N <- nrow(X); D <- ncol(X)
-  tmp <- .normalize(cbind(Y,X))
-  Xn <- tmp$Xn[,-1]
-  Yn <- tmp$Xn[,1]
-  pars <- tmp$params
+  if (scale) {
+    tmp <- .normalize(cbind(Y,X))
+    X <- tmp$Xn[,-1]
+    Y <- tmp$Xn[,1]
+    pars <- tmp$params
+    rm(tmp)
+  } else {
+    pars <- list(MM=rep(1,D+1), mm=rep(0,D+1))
+  }
 
   prototypes <- switch(match.arg(prototypes),
                        kmeans = if(clusterY) {
-                             suppressWarnings(kmeans(tmp$Xn, centers=nump))$centers[,-1]
+                             suppressWarnings(kmeans(cbind(Y,X), centers=nump))$centers[,-1]
                            } else {
-                             suppressWarnings(kmeans(Xn, centers=nump))$centers
+                             suppressWarnings(kmeans(X, centers=nump))$centers
                            },
-                       random = Xn[sample(nrow(Xn),nump),])
-  rm(tmp, X, Y)  ## Free some memory
+                       random = X[sample(nrow(X),nump),])
 
-
-  if(!is.na(match("sigma", names(formals(ktype))))){
+  if("sigma" %in% names(formals(ktype))){
     if (missing(kpar)) {
       kpar <- list()
     }
     if(is.null(kpar$sigma)){
-      kpar$sigma <- median(dist(Xn[sample(nrow(Xn),min(nrow(Xn),50)),]))
+      sigest <- match.fun(sigest)
+      kpar$sigma <- sigest(X, Y=Y)
+      message("Sigma estimated: ", kpar$sigma)
     }
   }
-  if ('sigma' %in% names(kpar))
-    message("Sigma: ", kpar$sigma)
 
   kernel <- do.call(ktype, kpar)
 
-  Xt <- kernelMatrix(kernel, Xn, prototypes)
+  Xt <- kernelMatrix(kernel, X, prototypes)
   message("Kernel dimensions: [", paste(dim(Xt), collapse=' x '), "]")
 
-  Xt0 <- cbind(Yn-epsilon.down, Xt)
-  Xt1 <- cbind(Yn+epsilon.up, Xt)
+  Xt0 <- cbind(Y-epsilon.down, Xt)
+  Xt1 <- cbind(Y+epsilon.up, Xt)
   data <- rbind(Xt0, Xt1)
   labels <- rep(c(0,1), each=N)
 
@@ -144,13 +154,27 @@ LinearizedSVRTrain <- function(X, Y,
     W <- svc$W
   }
   else{
-    ex <- expectreg.ls(Yn~rb(Xt, type="special", B=Xt, P=diag(rep(1, nump))),
+    ex <- expectreg.ls(Y~rb(Xt, type="special", B=Xt, P=diag(rep(1, nump))),
                       estimate="bundle", smooth="fixed", expectiles=expectile)
     W <- c(-1, unlist(ex$coefficients), ex$intercept)
   }
   model <- list(W = W, prototypes=prototypes, params=pars, kernel=kernel)
   class(model) <- 'LinearizedSVR'
   return(model)
+}
+
+##' Quickly estimates a reasonable default value for the 'sigma'
+##' parameter to several of kernlab's kernel functions.
+##'
+##' @param X a numeric matrix
+##' @param method a which procedure to use for estimation - 'meddist' means
+##' @param ... currently ignored
+##' @export
+sigma.est <- function(X, method=c('meddist','invvar'), ...) {
+  switch(match.arg(method),
+         meddist = median(dist(X[sample(nrow(X),min(nrow(X),50)),])),
+         invvar = 1/(2*median(dist(X[sample(nrow(X),min(nrow(X),50)),]))^2)
+         )
 }
 
 ##' Predict method for LinearizedSVR models
@@ -174,7 +198,7 @@ predict.LinearizedSVR <- function(object, newdata, ...){
   tmp <- .normalize(cbind(0, newdata), model$params) #the zero column is because the params had the target also
   Xn <- tmp$Xn[, -1, drop=FALSE]
   Xt <- kernelMatrix(model$kernel, Xn, model$prototypes)
-  Xt <- cbind(Xt, array(1, dim(Xt)[1]))
+  Xt <- cbind(Xt, 1)
   wx.b <- Xt %*% model$W[-1] #all but the first weight
   Y.hat <- as.vector(-wx.b / model$W[1])
   Y.hat <- Y.hat *(model$params$MM[1]-model$params$mm[1]) + model$params$mm[1] #unnormalize predictions

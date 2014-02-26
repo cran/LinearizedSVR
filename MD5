@@ -1,8 +1,10 @@
-622602424b883a36627e4d5403fdc7da *DESCRIPTION
-8befc3fc1fb900d204dd887c88e44428 *NAMESPACE
-bdb6adcf68b7e22f711dd1eb056c2cd1 *R/linearizedSVR.R
-6208d945a29caba2595a1ee8872c1779 *inst/tests/test-main.R
-be4bea6cf092647af9714034dc66e93a *man/LinearizedSVR-package.Rd
-26688878110f66a4afc49a3f0f9faa36 *man/LinearizedSVRTrain.Rd
-d5d86da672d7412639ec5a03d0db0a09 *man/predict.LinearizedSVR.Rd
+a7bb6f8b1b48e0f398f4dc97432efab5 *DESCRIPTION
+e69d0f9c0bbe541f6c5eb3eff99596a8 *NAMESPACE
+8c84c382186f38c17052d50ee97e3426 *NEWS
+dc1623bf63f23717f0a991f7acd0fdf5 *R/linearizedSVR.R
+d751d9422090e79c3a964a2ccc60d611 *inst/tests/test-main.R
+dbc9245c875c13ac2c597abf747a06fd *man/LinearizedSVR-package.Rd
+2bdd6de6a8ddf89a8977e81890d8471a *man/LinearizedSVRTrain.Rd
+578652a12c4007804edf25ea2431cc6a *man/predict.LinearizedSVR.Rd
+5dd449152ba7c33ecafe92263a74b1de *man/sigma.est.Rd
 e2571c8026fdb4976edfc168b1811205 *tests/main.R

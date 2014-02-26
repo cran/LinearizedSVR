@@ -1,0 +1,78 @@
+\name{LinearizedSVRTrain}
+\alias{LinearizedSVRTrain}
+\title{LinearizedSVRTrain}
+\usage{
+LinearizedSVRTrain(X, Y, C = 1, epsilon = 0.01, nump = floor(sqrt(N)),
+  ktype = rbfdot, kpar, prototypes = c("kmeans", "random"),
+  clusterY = FALSE, epsilon.up = epsilon, epsilon.down = epsilon,
+  expectile = NULL, scale = TRUE, sigest = sigma.est)
+}
+\arguments{
+  \item{X}{matrix of examples, one example per row.}
+
+  \item{Y}{vector of target values.  Must be the same
+  length as the number of rows in \code{X}.}
+
+  \item{C}{cost of constraints violation}
+
+  \item{epsilon}{tolerance of termination criterion for
+  optimization}
+
+  \item{nump}{number of prototypes by which to represent
+  each example in \code{X}}
+
+  \item{ktype}{kernel-generating function, typically from
+  the \pkg{kernlab} package}
+
+  \item{kpar}{a list of any parameters necessary for
+  \code{ktype}.  See Details.}
+
+  \item{prototypes}{the method by which prototypes will be
+  chosen}
+
+  \item{clusterY}{whether to cluster \code{X} and \code{Y}
+  jointly when using \code{prototypes="kmeans"}.  Otherwise
+  \code{X} is clustered without influence from \code{Y}.}
+
+  \item{epsilon.up}{allows you to use a different setting
+  for \code{epsilon} in the positive direction.}
+
+  \item{epsilon.down}{allows you to use a different setting
+  for \code{epsilon} in the negative direction.}
+
+  \item{expectile}{if non-null, do expectile regression
+  using the given expectile value.  Currently uses the
+  \code{expectreg} package.}
+
+  \item{scale}{a boolean value indicating whether \code{X}
+  and \code{Y} should be normalized (to zero-mean and
+  unit-variance) before learning.}
+
+  \item{sigest}{if the kernel expects a \code{sigma}
+  parameter and none is provided in \code{kpar}, this
+  parameter specifies a function to use to compute it.}
+}
+\value{
+a model object that can later be used as the first argument
+for the \code{predict()} method.
+}
+\description{
+Train a prototype-based Linearized Support-Vector
+Regression model
+}
+\details{
+This function trains a new LinearizedSVR model based on
+\code{X} and \code{Y}.  See \link{LinearizedSVR-package}
+for an explanation of how such models are defined.
+}
+\examples{
+dat <- rbind(data.frame(y=2, x1=rnorm(500, 1), x2=rnorm(500, 1)),
+             data.frame(y=1, x1=rnorm(500,-1), x2=rnorm(500,-1)))
+mod <- LinearizedSVRTrain(X=as.matrix(dat[-1]), Y=dat$y, nump=6)
+res <- predict(mod, newdata=as.matrix(dat[-1]))
+plot(x2 ~ x1, dat, col=c("red","green")[1+(res>1.5)], pch=c(3,20)[dat$y])
+}
+\seealso{
+LinearizedSVR-package
+}
+

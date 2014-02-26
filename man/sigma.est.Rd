@@ -1,0 +1,20 @@
+\name{sigma.est}
+\alias{sigma.est}
+\title{Quickly estimates a reasonable default value for the 'sigma'
+parameter to several of kernlab's kernel functions.}
+\usage{
+sigma.est(X, method = c("meddist", "invvar"), ...)
+}
+\arguments{
+  \item{X}{a numeric matrix}
+
+  \item{method}{a which procedure to use for estimation -
+  'meddist' means}
+
+  \item{...}{currently ignored}
+}
+\description{
+Quickly estimates a reasonable default value for the
+'sigma' parameter to several of kernlab's kernel functions.
+}
+

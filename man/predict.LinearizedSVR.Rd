@@ -1,0 +1,32 @@
+\name{predict.LinearizedSVR}
+\alias{predict.LinearizedSVR}
+\title{predict}
+\usage{
+\method{predict}{LinearizedSVR}(object, newdata, ...)
+}
+\arguments{
+  \item{object}{a model previously trained using
+  \code{LinearizedSVRTrain()}}
+
+  \item{newdata}{a matrix of new data to run predictions
+  on, with the same columns as \code{X} had during
+  training}
+
+  \item{...}{further arguments passed to or from other
+  methods}
+}
+\value{
+a vector of predicted regression values, with length equal
+to the number of rows in \code{newdata}.
+}
+\description{
+Predict method for LinearizedSVR models
+}
+\details{
+This method produces predicted value, obtained by
+evaluating the trained model \code{object} on the given
+data set \code{newdata}. The columns of \code{newdata} must
+correspond exactly to the columns of \code{X} when the
+model \code{object} was created.
+}
+
